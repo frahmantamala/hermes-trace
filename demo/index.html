@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HermesTrace Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error-btn {
+            background: #dc3545;
+        }
+        .error-btn:hover {
+            background: #c82333;
+        }
+        .warn-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        .warn-btn:hover {
+            background: #e0a800;
+        }
+        #console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 20px 0;
+        }
+        .config-section {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+        }
+        input, select {
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .masking-demo {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 HermesTrace Demo</h1>
+    
+    <div class="container">
+        <h2>Console Output</h2>
+        <p>All logs will appear in the console below and your browser's developer console:</p>
+        <div id="console"></div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="container">
+        <h2>Basic Logging</h2>
+        <button onclick="logInfo()">Log Info</button>
+        <button onclick="logDebug()">Log Debug</button>
+        <button class="warn-btn" onclick="logWarn()">Log Warning</button>
+        <button class="error-btn" onclick="logError()">Log Error</button>
+        <button class="error-btn" onclick="logFatal()">Log Fatal</button>
+    </div>
+
+    <div class="container">
+        <h2>Context & Tags Demo</h2>
+        <button onclick="logWithContext()">Log with Context</button>
+        <button onclick="logWithTags()">Log with Tags</button>
+        <button onclick="createChildLogger()">Child Logger Demo</button>
+    </div>
+
+    <div class="container">
+        <h2>Data Masking Demo</h2>
+        <div class="masking-demo">
+            <p><strong>Note:</strong> Sensitive data will be automatically masked in logs</p>
+        </div>
+        <button onclick="logSensitiveData()">Log User Data (with masking)</button>
+        <button onclick="logCreditCard()">Log Payment Info (masked)</button>
+        <button onclick="logCustomMasking()">Custom Masking Rules</button>
+    </div>
+
+    <div class="container">
+        <h2>Error Handling Demo</h2>
+        <button class="error-btn" onclick="triggerError()">Trigger JavaScript Error</button>
+        <button class="error-btn" onclick="triggerPromiseRejection()">Unhandled Promise Rejection</button>
+        <button onclick="logStackTrace()">Log with Stack Trace</button>
+    </div>
+
+    <div class="container">
+        <h2>Performance Demo</h2>
+        <button onclick="logPerformance()">Log Performance Metrics</button>
+        <button onclick="batchLogs()">Batch Log Demo (10 logs)</button>
+        <button onclick="flushLogs()">Force Flush Logs</button>
+    </div>
+
+    <div class="config-section">
+        <h3>Logger Configuration</h3>
+        <label>Log Level: 
+            <select id="logLevel" onchange="updateLogLevel()">
+                <option value="debug">DEBUG</option>
+                <option value="info" selected>INFO</option>
+                <option value="warn">WARN</option>
+                <option value="error">ERROR</option>
+                <option value="fatal">FATAL</option>
+            </select>
+        </label>
+        <label>User ID: <input type="text" id="userId" value="demo-user-123" onchange="updateUserId()"></label>
+        <button onclick="addCustomField()">Add Custom Context</button>
+    </div>
+
+    <!-- Include the built HermesTrace library -->
+    <script type="module">
+        // For demo purposes, we'll use a simplified version
+        // In real usage, you'd import from the built dist files
+        
+        class SimpleConsoleTransport {
+            constructor(config = {}) {
+                this.config = { level: 'debug', ...config };
+            }
+            
+            log(entry) {
+                const logDiv = document.getElementById('console');
+                const timestamp = entry.timestamp.toISOString();
+                const level = entry.level.toUpperCase();
+                const message = entry.message;
+                const context = entry.context ? JSON.stringify(entry.context, null, 2) : '';
+                
+                const logLine = `[${timestamp}] ${level}: ${message}${context ? '\nContext: ' + context : ''}\n\n`;
+                logDiv.textContent += logLine;
+                logDiv.scrollTop = logDiv.scrollHeight;
+                
+                // Also log to browser console
+                console.log(`[HermesTrace] ${level}:`, message, entry.context || '');
+            }
+        }
+
+        class SimpleMasker {
+            maskData(data) {
+                if (typeof data === 'string') {
+                    return data
+                        .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, (email) => {
+                            const [local, domain] = email.split('@');
+                            return `${local[0]}***${local[local.length-1]}@${domain}`;
+                        })
+                        .replace(/\b(?:\d{4}[-\s]?){3}\d{4}\b/g, '****-****-****-XXXX')
+                        .replace(/\b\d{3}-?\d{2}-?\d{4}\b/g, '***-**-****');
+                }
+                
+                if (typeof data === 'object' && data !== null) {
+                    const masked = {};
+                    for (const [key, value] of Object.entries(data)) {
+                        if (['password', 'secret', 'token', 'apiKey', 'creditCard', 'ssn'].some(field => 
+                            key.toLowerCase().includes(field.toLowerCase()))) {
+                            masked[key] = '***MASKED***';
+                        } else {
+                            masked[key] = this.maskData(value);
+                        }
+                    }
+                    return masked;
+                }
+                
+                return data;
+            }
+        }
+
+        class SimpleLogger {
+            constructor(config = {}) {
+                this.config = {
+                    level: 'info',
+                    context: {},
+                    masking: { enabled: true },
+                    ...config
+                };
+                this.transports = config.transports || [];
+                this.masker = new SimpleMasker();
+                this.sessionId = Math.random().toString(36).substr(2, 9);
+            }
+
+            log(level, message, context = {}, tags = [], error = null) {
+                const entry = {
+                    level,
+                    message,
+                    timestamp: new Date(),
+                    context: { ...this.config.context, ...context },
+                    error,
+                    tags,
+                    sessionId: this.sessionId,
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                };
+
+                // Apply masking
+                if (this.config.masking?.enabled) {
+                    entry.message = this.masker.maskData(entry.message);
+                    entry.context = this.masker.maskData(entry.context);
+                }
+
+                this.transports.forEach(transport => transport.log(entry));
+            }
+
+            debug(message, context, tags) { this.log('debug', message, context, tags); }
+            info(message, context, tags) { this.log('info', message, context, tags); }
+            warn(message, context, tags) { this.log('warn', message, context, tags); }
+            error(message, error, context, tags) { this.log('error', message, context, tags, error); }
+            fatal(message, error, context, tags) { this.log('fatal', message, context, tags, error); }
+
+            setContext(context) {
+                this.config.context = { ...this.config.context, ...context };
+            }
+
+            createChild(context) {
+                return new SimpleLogger({
+                    ...this.config,
+                    context: { ...this.config.context, ...context },
+                    transports: this.transports
+                });
+            }
+        }
+
+        // Initialize logger
+        window.logger = new SimpleLogger({
+            transports: [new SimpleConsoleTransport()],
+            context: { 
+                userId: 'demo-user-123',
+                sessionId: 'demo-session',
+                version: '1.0.0-demo'
+            }
+        });
+
+        // Demo functions
+        window.logInfo = () => {
+            logger.info('This is an info message', { 
+                action: 'demo-click',
+                timestamp: Date.now()
+            });
+        };
+
+        window.logDebug = () => {
+            logger.debug('Debug information for developers', {
+                debugData: { foo: 'bar', nested: { value: 42 } }
+            });
+        };
+
+        window.logWarn = () => {
+            logger.warn('This is a warning message', {
+                warningType: 'demo-warning',
+                severity: 'medium'
+            });
+        };
+
+        window.logError = () => {
+            const error = new Error('Demo error for testing');
+            logger.error('An error occurred in the demo', error, {
+                errorType: 'demo-error',
+                recoverable: true
+            });
+        };
+
+        window.logFatal = () => {
+            const error = new Error('Critical system failure');
+            logger.fatal('Fatal error - system unstable', error, {
+                errorType: 'system-failure',
+                requiresRestart: true
+            });
+        };
+
+        window.logWithContext = () => {
+            logger.info('User action logged', {
+                userId: 'user-456',
+                action: 'button-click',
+                page: 'demo',
+                metadata: {
+                    browser: navigator.userAgent.split(' ')[0],
+                    timestamp: new Date().toISOString()
+                }
+            });
+        };
+
+        window.logWithTags = () => {
+            logger.info('Tagged log message', {
+                feature: 'tagging-demo',
+                importance: 'high'
+            }, ['demo', 'user-action', 'frontend']);
+        };
+
+        window.createChildLogger = () => {
+            const childLogger = logger.createChild({ 
+                module: 'payment-processor',
+                version: '2.1.0'
+            });
+            childLogger.info('Child logger created and used', {
+                operation: 'process-payment',
+                amount: 99.99
+            });
+        };
+
+        window.logSensitiveData = () => {
+            logger.info('User registration attempt', {
+                email: 'john.doe@example.com',
+                password: 'mySecretPassword123',
+                username: 'johndoe',
+                phone: '+1-555-123-4567',
+                preferences: {
+                    notifications: true,
+                    apiKey: 'sk-1234567890abcdef'
+                }
+            });
+        };
+
+        window.logCreditCard = () => {
+            logger.info('Payment processing', {
+                customerEmail: 'customer@shop.com',
+                paymentMethod: {
+                    creditCard: '4532-1234-5678-9012',
+                    expiryDate: '12/25',
+                    cvv: '123'
+                },
+                amount: 299.99,
+                currency: 'USD'
+            });
+        };
+
+        window.logCustomMasking = () => {
+            logger.info('Custom sensitive data', {
+                publicId: 'pub-123',
+                internalSecret: 'internal-secret-key',
+                userToken: 'bearer-token-xyz',
+                normalField: 'this-is-safe'
+            });
+        };
+
+        window.triggerError = () => {
+            try {
+                throw new Error('Intentional error for demo purposes');
+            } catch (error) {
+                logger.error('Caught and logged error', error, {
+                    errorSource: 'demo-function',
+                    handled: true
+                });
+            }
+        };
+
+        window.triggerPromiseRejection = () => {
+            Promise.reject(new Error('Unhandled promise rejection demo'))
+                .catch(error => {
+                    logger.error('Promise rejection handled', error, {
+                        promiseType: 'demo-rejection'
+                    });
+                });
+        };
+
+        window.logStackTrace = () => {
+            const error = new Error('Stack trace demo');
+            logger.error('Error with stack trace', error, {
+                includeStack: true,
+                context: 'demo-function'
+            });
+        };
+
+        window.logPerformance = () => {
+            const performanceData = {
+                loadTime: performance.now(),
+                memoryUsage: performance.memory ? {
+                    used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+                    total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024)
+                } : 'not available',
+                connectionType: navigator.connection ? navigator.connection.effectiveType : 'unknown'
+            };
+            
+            logger.info('Performance metrics captured', performanceData, ['performance']);
+        };
+
+        window.batchLogs = () => {
+            for (let i = 1; i <= 10; i++) {
+                logger.info(`Batch log message ${i}`, {
+                    batchId: 'demo-batch-001',
+                    messageNumber: i,
+                    timestamp: Date.now()
+                }, ['batch', 'demo']);
+            }
+        };
+
+        window.flushLogs = () => {
+            logger.info('Forcing log flush', { operation: 'manual-flush' });
+            // In real HermesTrace, this would call logger.flush()
+        };
+
+        window.clearConsole = () => {
+            document.getElementById('console').textContent = '';
+        };
+
+        window.updateLogLevel = () => {
+            const level = document.getElementById('logLevel').value;
+            logger.config.level = level;
+            logger.info(`Log level changed to ${level.toUpperCase()}`, { 
+                previousLevel: logger.config.level,
+                newLevel: level 
+            });
+        };
+
+        window.updateUserId = () => {
+            const userId = document.getElementById('userId').value;
+            logger.setContext({ userId });
+            logger.info('User ID updated', { newUserId: userId });
+        };
+
+        window.addCustomField = () => {
+            const customValue = prompt('Enter a custom value:');
+            if (customValue) {
+                logger.setContext({ 
+                    customField: customValue,
+                    addedAt: new Date().toISOString()
+                });
+                logger.info('Custom context added', { customField: customValue });
+            }
+        };
+
+        // Initialize demo
+        logger.info('HermesTrace Demo initialized', {
+            demoVersion: '1.0.0',
+            features: ['masking', 'context', 'tags', 'error-handling']
+        }, ['demo', 'initialization']);
+    </script>
+</body>
+</html>

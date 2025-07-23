@@ -59,11 +59,13 @@ export abstract class BaseTransport implements Transport {
   }
 
   private startFlushTimer(): void {
-    this.flushTimer = setInterval(() => {
-      if (this.buffer.length > 0) {
-        this.flush();
-      }
-    }, this.config.flushInterval);
+    if (typeof window !== 'undefined') {
+      this.flushTimer = setInterval(() => {
+        if (this.buffer.length > 0) {
+          this.flush();
+        }
+      }, this.config.flushInterval);
+    }
   }
 
   public async flush(): Promise<void> {

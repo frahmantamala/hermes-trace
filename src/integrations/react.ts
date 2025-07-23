@@ -1,4 +1,10 @@
-import React from 'react';
+let React: any;
+
+try {
+  React = require('react');
+} catch (e) {
+  // React not available
+}
 import { HermesTrace } from '../logger';
 import { FrameworkIntegration, ErrorBoundaryConfig } from '../types';
 

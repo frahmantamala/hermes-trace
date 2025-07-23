@@ -23,25 +23,5 @@ export { LokiTransport } from './transports/loki';
 export { DatadogTransport } from './transports/datadog';
 export { SentryTransport } from './transports/sentry';
 
-export { 
-  ReactIntegration,
-  HermesErrorBoundary,
-  withHermesLogging,
-  useHermesLogger as useReactHermesLogger,
-} from './integrations/react';
-
-export {
-  VueIntegration,
-  createVuePlugin,
-  useHermesLogger as useVueHermesLogger,
-} from './integrations/vue';
-
-export {
-  AngularIntegration,
-  HermesErrorHandler,
-  HermesLoggerService,
-  HermesHttpInterceptor,
-  HermesRouterLogger,
-  provideHermesLogger,
-  type HermesAngularConfig,
-} from './integrations/angular';
+// Framework integrations are exported from separate entry points
+// Use hermes-trace/react, hermes-trace/vue, hermes-trace/angular

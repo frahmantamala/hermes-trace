@@ -94,7 +94,7 @@ function MyComponent() {
 ### Vue 3
 
 ```javascript
-import { createVuePlugin } from 'hermes-trace';
+import { createVuePlugin } from 'hermes-trace/vue';
 
 app.use(createVuePlugin(logger));
 

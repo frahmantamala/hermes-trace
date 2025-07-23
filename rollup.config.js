@@ -1,28 +1,18 @@
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 
-export default {
-  input: 'src/index.ts',
+const createConfig = (input, name, external = []) => ({
+  input,
   output: [
     {
-      file: 'dist/index.js',
+      file: `dist/${name}.js`,
       format: 'cjs',
       sourcemap: true,
     },
     {
-      file: 'dist/index.esm.js',
+      file: `dist/${name}.esm.js`,
       format: 'esm',
       sourcemap: true,
-    },
-    {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      name: 'HermesTrace',
-      sourcemap: true,
-      globals: {
-        'react': 'React',
-        '@sentry/browser': 'Sentry'
-      }
     },
   ],
   plugins: [
@@ -34,5 +24,12 @@ export default {
       tsconfig: './tsconfig.json',
     }),
   ],
-  external: ['@sentry/browser', 'react'],
-};
+  external,
+});
+
+export default [
+  createConfig('src/index.ts', 'index', ['@sentry/browser']),
+  createConfig('src/react.ts', 'react', ['react', '@sentry/browser']),
+  createConfig('src/vue.ts', 'vue', ['vue', '@sentry/browser']),
+  createConfig('src/angular.ts', 'angular', ['@angular/core', '@angular/common/http', '@angular/router', '@sentry/browser']),
+];

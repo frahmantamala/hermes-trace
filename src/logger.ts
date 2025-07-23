@@ -26,7 +26,7 @@ export class HermesTrace {
     this.transports = [...this.config.transports];
     this.dataMasker = new DataMasker(this.config.masking);
 
-    if (this.config.autoFlush) {
+    if (this.config.autoFlush && typeof window !== 'undefined') {
       setInterval(() => this.flush(), this.config.flushInterval);
     }
 
