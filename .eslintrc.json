@@ -1,0 +1,46 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "env": {
+    "node": true,
+    "browser": true,
+    "es2020": true
+  },  
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "globals": {
+    "React": "readonly",
+    "NodeJS": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["**/types/**/*.ts"],
+      "rules": {
+        "no-unused-vars": ["error", {
+          "argsIgnorePattern": ".*",
+          "varsIgnorePattern": "^(DEBUG|INFO|WARN|ERROR|FATAL)$"
+        }]
+      }
+    }
+  ]
+}
