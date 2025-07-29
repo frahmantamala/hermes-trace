@@ -1,6 +1,6 @@
 {
   "name": "hermes-trace",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Framework-agnostic frontend logging package with support for multiple transports (Loki, Datadog, Sentry)",
   "main": "dist/index.js",
