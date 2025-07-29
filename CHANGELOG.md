@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/frahmantamala/hermes-trace/compare/v1.0.0...v1.1.0) (2025-07-29)
+
+### Features
+
+* update version ([#4](https://github.com/frahmantamala/hermes-trace/issues/4)) ([76bc1f2](https://github.com/frahmantamala/hermes-trace/commit/76bc1f2ea1bce0012703df098e9aa0a121db862d))
+
 ## 1.0.0 (2025-07-29)
 
 ### Features
